@@ -18,11 +18,12 @@ import java.util.Map;
 public class BoardController {
 
     private final BoardNativeRepository boardNativeRepository;
+    private final BoardPersistRepository boardPersistRepository;
 
     // GET http://localhost:8080/  ,   http://localhost:8080/board/list
     @GetMapping({"/", "/board/list"})
     public String list(Model model) {
-        List<Board> boardList = boardNativeRepository.findAll();
+        List<Board> boardList = boardPersistRepository.findAll();
         model.addAttribute("boardList", boardList);
         return "board/list";
     }
@@ -31,11 +32,13 @@ public class BoardController {
     @GetMapping("/board/{id}")
     public String detail(@PathVariable(name = "id") Long id, Model model) {
 
-        Board board = boardNativeRepository.findById(id);
-        if (board == null) {
-            return "redirect:/";
+        // Board boardEntity = boardPersistRepository.findById(id);
+        Board boardEntity = boardPersistRepository.findByIdWithJQPL(id);
+        if (boardEntity == null) {
+            // 추후에 404 에러 페이지를 만들어서 처리할 예정
+            throw new RuntimeException("게시글을 찾을 수 없습니다. :" + id);
         }
-        model.addAttribute("board", board);
+        model.addAttribute("board", boardEntity);
         return "board/detail";
     }
 
@@ -45,24 +48,20 @@ public class BoardController {
         return "board/save-form";
     }
 
-    // POST - http://localhost:8080/board/save
-    // 스프링 부트의 데이터 기본 파싱 전략 key=value
-    // name 속성 기준으로 값을 추출할 수 있다.
     @PostMapping("/board/save")
-    public String save(@RequestParam("username") String username,
-                       @RequestParam("title") String title,
-                       @RequestParam("content") String content) {
-        // 폼의 name 속성과 매개변수명이 일치하면 자동으로 값이 바인딩된다.
-        // name="title" --> String title로 자동 매핑
-        log.info("username : {}", username);
-        log.info("titlee : {}", title);
-        log.info("content : {}", content);
+    // Spring 폼 데이터를 객체로 변환하는 과정 (데이터 바인딩 메커니즘)
+    // 폼 데이터 바인딩 : Spring이 HTTP 요청 파라미터를 객체로 자동 변환
+    public String save(BoardRequest.SaveDto reqDto) {
 
-        // DAO 객체에게 데이터를 전달 후 저장하는 일 위임
-        boardNativeRepository.save(title, content, username);
+        // 1. DTO에서 Entity 클래스 타입으로 변환 해주어야함
+        Board board = Board.builder()
+                .title(reqDto.getTitle())
+                .content(reqDto.getContent())
+                .username(reqDto.getUsername())
+                .build();
+                // new Board(reqDto.getTitle(), reqDto.getContent(), reqDto.getUsername());
+        Board boardEntity = boardPersistRepository.save(board);
 
-        // redirect : 저장 후 메인페이지로 이동
-        // POST 요청 후 redirect 로 PRG(Post-Redirect-Get) 패턴 구현
         return "redirect:/";
     }
 
@@ -71,7 +70,7 @@ public class BoardController {
     public String updateForm(@PathVariable Long id, Model model) {
 
         // 수정하기 화면 요청 (먼저 조회부터)
-        Board board = boardNativeRepository.findById(id);
+        Board board = boardPersistRepository.findById(id);
         model.addAttribute("board", board);
         return "board/update-form";
     }
@@ -79,9 +78,12 @@ public class BoardController {
     // POST - http://localhost:8080/board/1/update (게시글 수정 기능 요청)
     @PostMapping("/board/{id}/update")
     public String update(@PathVariable Long id,
-                         @RequestParam(name = "title") String title,
-                         @RequestParam(name = "content") String content) {
-        boardNativeRepository.updateById(title, content, id);
+                         BoardRequest.UpdateDto reqDto) {
+
+        reqDto.validate();  // 유효성 실패 (throw 던져짐)
+
+
+        boardPersistRepository.updateById(id, reqDto);
         // PRG (Post Redirect Get)
         return "redirect:/board/" + id;     // 리다이렉트 수정된 게시글 상세보기 화면 이동
     }
@@ -89,7 +91,7 @@ public class BoardController {
     // 게시글 삭제
     @PostMapping("/board/{id}/delete")
     public String delete(@PathVariable Long id) {
-        boardNativeRepository.deleteById(id);
+        boardPersistRepository.deleteById(id);
 
         // PRG (Post Redirect Get) 패턴
         return "redirect:/";
