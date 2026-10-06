@@ -28,6 +28,7 @@ spring:
     show-sql: true
     properties:
       hibernate:
+        default_batch_fetch_size: 10
         format_sql: true    # 출력되는 SQL을 콘솔창에 줄바꿈해서 보기좋게 표시한다.
     # 추후에 data.sql을 테이블 생성후에 실행한다.
     defer-datasource-initialization: true

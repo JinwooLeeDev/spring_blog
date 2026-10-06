@@ -7,10 +7,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -52,15 +50,15 @@ public class BoardController {
     // Spring 폼 데이터를 객체로 변환하는 과정 (데이터 바인딩 메커니즘)
     // 폼 데이터 바인딩 : Spring이 HTTP 요청 파라미터를 객체로 자동 변환
     public String save(BoardRequest.SaveDto reqDto) {
-
+        // TODO - 수정예정
         // 1. DTO에서 Entity 클래스 타입으로 변환 해주어야함
-        Board board = Board.builder()
-                .title(reqDto.getTitle())
-                .content(reqDto.getContent())
-                .username(reqDto.getUsername())
-                .build();
-                // new Board(reqDto.getTitle(), reqDto.getContent(), reqDto.getUsername());
-        Board boardEntity = boardPersistRepository.save(board);
+//        Board board = Board.builder()
+//                .title(reqDto.getTitle())
+//                .content(reqDto.getContent())
+//                .user(reqDto.getUsername())
+//                .build();
+//                // new Board(reqDto.getTitle(), reqDto.getContent(), reqDto.getUsername());
+//        Board boardEntity = boardPersistRepository.save(board);
 
         return "redirect:/";
     }

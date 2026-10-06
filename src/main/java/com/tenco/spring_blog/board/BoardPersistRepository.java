@@ -129,20 +129,4 @@ public class BoardPersistRepository {
     // 2. 영속 상태 : 영속성 컨텍스트에 관리되는 상태
     // 3. 준영속 상태 : 영속성 컨텍스트에서 관리되다가 분리된 상태
     // 4. 삭제 상태 : 삭제 예정 상태 (트랜잭션 커밋 시 DELETE 쿼리 실행)
-    private void entityLifecycleEx() {
-        // 1. 비영속
-        Board board = new Board("제목", "내용", "작성자");
-
-        // 2. 영속
-        em.persist(board);
-
-        // 3. 준영속 : 영속성 컨텍스트에서 분리된 상태
-        em.detach(board);
-
-        // 4. 삭제 : 삭제 예정 상태
-        em.remove(board);
-
-    }
-
-
 }
