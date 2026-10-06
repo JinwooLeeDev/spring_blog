@@ -1,4 +1,4 @@
-package com.tenco.spring_blog.User;
+package com.tenco.spring_blog.user;
 
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -13,7 +13,6 @@ import java.sql.Timestamp;
 @Table(name = "user_tb")
 @Entity
 public class User {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
