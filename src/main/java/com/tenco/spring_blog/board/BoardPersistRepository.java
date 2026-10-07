@@ -71,7 +71,6 @@ public class BoardPersistRepository {
         String jpql = """
                 select b from Board b where b.id = :id
                 """;
-
         try {
             return em.createQuery(jpql, Board.class)
                     .setParameter("id", id)
