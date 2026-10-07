@@ -1,0 +1,35 @@
+{{> layout/header}}
+{{> err/style}}
+
+<main class="error-page error-page--401" aria-labelledby="error-title">
+    <section class="error-card">
+        <div class="error-art" aria-hidden="true">
+            <span class="error-orbit error-orbit--one"></span>
+            <span class="error-orbit error-orbit--two"></span>
+            <span class="error-spark error-spark--one">+</span>
+            <span class="error-spark error-spark--two">+</span>
+            <span class="error-number">401</span>
+            <span class="error-symbol">↗</span>
+            <span class="error-art-caption">EVERY STORY HAS A LITTLE PAUSE.</span>
+        </div>
+        <div class="error-content">
+            <span class="error-badge"><span></span> 401 · Unauthorized</span>
+            <h1 id="error-title">로그인이 필요한 페이지예요</h1>
+            <p class="error-description">계정에 로그인하고<br>나만의 이야기를 이어가 보세요.</p>
+            {{#msg}}
+                <div class="error-detail">
+                    <span class="error-detail-label">안내 메시지</span>
+                    <p>{{msg}}</p>
+                </div>
+            {{/msg}}
+            <div class="error-actions">
+                <a class="error-button error-button--primary" href="/login">로그인하기 <span aria-hidden="true">↗</span></a>
+                <a class="error-button error-button--secondary" href="/">홈으로 돌아가기</a>
+            </div>
+            <p class="error-hint">로그인 후 원하는 서비스를 이용할 수 있어요.</p>
+        </div>
+    </section>
+    <p class="error-signature">Tencoding <span>·</span> 당신의 이야기는 계속됩니다.</p>
+</main>
+
+{{> layout/footer}}

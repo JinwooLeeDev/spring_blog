@@ -1,0 +1,35 @@
+{{> layout/header}}
+{{> err/style}}
+
+<main class="error-page error-page--500" aria-labelledby="error-title">
+    <section class="error-card">
+        <div class="error-art" aria-hidden="true">
+            <span class="error-orbit error-orbit--one"></span>
+            <span class="error-orbit error-orbit--two"></span>
+            <span class="error-spark error-spark--one">+</span>
+            <span class="error-spark error-spark--two">+</span>
+            <span class="error-number">500</span>
+            <span class="error-symbol">…</span>
+            <span class="error-art-caption">EVERY STORY HAS A LITTLE PAUSE.</span>
+        </div>
+        <div class="error-content">
+            <span class="error-badge"><span></span> 500 · Internal Server Error</span>
+            <h1 id="error-title">잠시 쉬어가는 중이에요</h1>
+            <p class="error-description">요청을 처리하는 중 문제가 발생했어요.<br>잠시 후 다시 이용해 주세요.</p>
+            {{#msg}}
+                <div class="error-detail">
+                    <span class="error-detail-label">안내 메시지</span>
+                    <p>{{msg}}</p>
+                </div>
+            {{/msg}}
+            <div class="error-actions">
+                <a class="error-button error-button--primary" href="/">홈으로 돌아가기 <span aria-hidden="true">↗</span></a>
+                <button class="error-button error-button--secondary" type="button" onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.assign('/'); }">이전 페이지</button>
+            </div>
+            <p class="error-hint">잠시 후에도 문제가 계속되면 관리자에게 문의해 주세요.</p>
+        </div>
+    </section>
+    <p class="error-signature">Tencoding <span>·</span> 당신의 이야기는 계속됩니다.</p>
+</main>
+
+{{> layout/footer}}

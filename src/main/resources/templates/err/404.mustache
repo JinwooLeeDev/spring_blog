@@ -1,0 +1,35 @@
+{{> layout/header}}
+{{> err/style}}
+
+<main class="error-page error-page--404" aria-labelledby="error-title">
+    <section class="error-card">
+        <div class="error-art" aria-hidden="true">
+            <span class="error-orbit error-orbit--one"></span>
+            <span class="error-orbit error-orbit--two"></span>
+            <span class="error-spark error-spark--one">+</span>
+            <span class="error-spark error-spark--two">+</span>
+            <span class="error-number">404</span>
+            <span class="error-symbol">?</span>
+            <span class="error-art-caption">EVERY STORY HAS A LITTLE PAUSE.</span>
+        </div>
+        <div class="error-content">
+            <span class="error-badge"><span></span> 404 · Not Found</span>
+            <h1 id="error-title">찾으시는 페이지가 없어요</h1>
+            <p class="error-description">주소가 변경되었거나 삭제된 페이지일 수 있어요.<br>홈에서 새로운 이야기를 만나 보세요.</p>
+            {{#msg}}
+                <div class="error-detail">
+                    <span class="error-detail-label">안내 메시지</span>
+                    <p>{{msg}}</p>
+                </div>
+            {{/msg}}
+            <div class="error-actions">
+                <a class="error-button error-button--primary" href="/">홈으로 돌아가기 <span aria-hidden="true">↗</span></a>
+                <button class="error-button error-button--secondary" type="button" onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.assign('/'); }">이전 페이지</button>
+            </div>
+            <p class="error-hint">주소를 한 번 더 확인해 주세요.</p>
+        </div>
+    </section>
+    <p class="error-signature">Tencoding <span>·</span> 당신의 이야기는 계속됩니다.</p>
+</main>
+
+{{> layout/footer}}

@@ -1,5 +1,8 @@
 package com.tenco.spring_blog.controller;
 
+import com.tenco.spring_blog._core.error.Exception400;
+import com.tenco.spring_blog._core.error.Exception404;
+import com.tenco.spring_blog._core.util.Define;
 import com.tenco.spring_blog.user.User;
 import com.tenco.spring_blog.user.UserPersistRepository;
 import com.tenco.spring_blog.user.UserRequest;
@@ -10,8 +13,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-
-import java.util.Map;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -26,37 +27,29 @@ public class UserController {
         // templates/ << 컨텐츠 루트 경로
         return "user/join-form";
     }
+
     // POST - http://localhost:8080/join
     @PostMapping("/join")
     public String join(UserRequest.JoinDto joinDto, Model model) {
-        log.info("회원가입 요청");
-        log.info("사용자명 {}", joinDto.getUsername());
-        log.info("패스워드 {}", joinDto.getPassword());
-        log.info("이메일 {}", joinDto.getEmail());
-        try {
-            // 1. 유효성 검사
-            joinDto.validate();
+        // 1. 유효성 검사
+        joinDto.validate();
 
-            // 2. 사용자명 중복 체크
-            User existingUser = userPersistRepository.findByUsername(joinDto.getUsername());
-            if (existingUser != null) {
-                throw new IllegalArgumentException("이미 존재하는 사용자명입니다.");
-            }
-
-            // 3. DTO를 Entity 변환
-            User user = joinDto.toEntity();
-
-            // 4. DB에 회원 정보 저장
-            User userEntity = userPersistRepository.save(user);
-
-            // 회원가입 성공 시 로그인 화면으로 이동
-            return "redirect:/login";
-        } catch (Exception e) {
-            log.error("회원가입 실패 : {} ", e.getMessage());
-            model.addAttribute("errorMessage", e.getMessage());
-            return "user/join-form";
+        // 2. 사용자명 중복 체크
+        User existingUser = userPersistRepository.findByUsername(joinDto.getUsername());
+        if (existingUser != null) {
+            throw new Exception400("이미 존재하는 사용자명입니다.");
         }
+
+        // 3. DTO를 Entity 변환
+        User user = joinDto.toEntity();
+
+        // 4. DB에 회원 정보 저장
+        User userEntity = userPersistRepository.save(user);
+
+        // 회원가입 성공 시 로그인 화면으로 이동
+        return "redirect:/login";
     }
+
     // GET - http://localhost:8080/login
     @GetMapping("/login")
     public String loginForm() {
@@ -71,41 +64,31 @@ public class UserController {
         log.info("=== 로그인 요청 ===");
         log.info("사용자 명 : {}", loginDto.getUsername());
 
-        try {
-            // 1. 입력 데이터 검증
-            loginDto.validate();
+        // 1. 입력 데이터 검증
+        loginDto.validate();
 
-            // 2. 사용자명과 비밀번호로 사용자 조회요청
-            User sessionUser = userPersistRepository.findByUsernameAndPassword(loginDto.getUsername(), loginDto.getPassword());
+        // 2. 사용자명과 비밀번호로 사용자 조회요청
+        User sessionUser = userPersistRepository.findByUsernameAndPassword(loginDto.getUsername(), loginDto.getPassword());
 
-            // 3. 로그인 성공/실패 처리
-            if (sessionUser == null) {
-                // 로그인 실패 : 일치하는 사용자 없음
-                throw new IllegalArgumentException("사용자명 또는 비밀번호가 올바르지 않습니다.");
-            }
-
-            // 머스태치가 세션 값을 기본으로 읽지 않는 설정이 되어있음
-            // 머스태치가 파일에서 세션 메모리에 접근할 수 있도록 설정 추가해야함
-            // 4. 로그인 성공 : 세션에 사용자 정보를 저장
-            session.setAttribute("sessionUser", sessionUser);
-            sessionUser.setPassword(null);
-            log.info("로그인한 사용자 : {}", sessionUser.getUsername());
-
-            // 5. 메인 페이지로 리다이렉트
-            return "redirect:/";
-
-        } catch (Exception e) {
-            // 로그인 실패 시 에러 메시지와 함께 로그인 폼으로 돌려 보내기.
-            model.addAttribute("errorMessage", e.getMessage());
+        // 3. 로그인 성공/실패 처리
+        if (sessionUser == null) {
+            // 로그인 실패 : 일치하는 사용자 없음
+            throw new Exception400("사용자명 또는 비밀번호가 올바르지 않습니다.");
         }
 
-        return "user/login-form";
+        // 머스태치가 세션 값을 기본으로 읽지 않는 설정이 되어있음
+        // 머스태치가 파일에서 세션 메모리에 접근할 수 있도록 설정 추가해야함
+        // 4. 로그인 성공 : 세션에 사용자 정보를 저장
+        sessionUser.setPassword(null);
+        session.setAttribute(Define.SESSION_USER, sessionUser);
+        // 5. 메인 페이지로 리다이렉트
+        return "redirect:/";
     }
 
     // GET - http://localhost:8080/user/update
     @GetMapping("/user/update")
     public String updateForm(Model model, HttpSession session) {
-        User user = (User) session.getAttribute("sessionUser");
+        User user = (User) session.getAttribute(Define.SESSION_USER);
         if (user == null) {
             return "redirect:/login";
         }
@@ -117,42 +100,31 @@ public class UserController {
     @PostMapping("/user/update")
     public String update(Model model, HttpSession session, UserRequest.UpdateDto updateDto) {
         // 1. 인증 검사
-        User sessionUser = (User) session.getAttribute("sessionUser");
+        User sessionUser = (User) session.getAttribute(Define.SESSION_USER);
         if (sessionUser == null) {
             return "redirect:/login";
         }
-        try {
-            // 2. 권한 검사 : 요청 값 대신 세션의 ID로 본인 정보만 수정
-            // 다른 사람의 정보는 처음부터 수정할수 없음 (대상이 실제로 있는지만 확인
-            User userEntity = userPersistRepository.findById(sessionUser.getId());
-            if (userEntity == null) {
-                throw new IllegalArgumentException("사용자를 찾을 수 없습니다.");
-            }
-            // 3. 유효성 검사 및 DB 수정
-            updateDto.validate();
-            // 4. 세션 동기화 : 수정된 정보를 세션에 반영
-            User updateUser = userPersistRepository.updateById(sessionUser.getId(), updateDto );
-            updateUser.setPassword(null);
-            // 세션 동기화 처리
-            session.setAttribute("sessionUser", updateUser);
-            // 5. 성공 후 메인페이지로 리다이렉트
-            return "redirect:/";
-        } catch (Exception e) {
-            // 5.1 예외 발생 (내부 이동)
-            log.error("회원 정보 실패 : {}", e.getMessage());
-            model.addAttribute("user", userPersistRepository.findById(sessionUser.getId()));
-            model.addAttribute("errormessage", e.getMessage());
-            return "user/update-form";
+        // 2. 권한 검사 : 요청 값 대신 세션의 ID로 본인 정보만 수정
+        // 다른 사람의 정보는 처음부터 수정할수 없음 (대상이 실제로 있는지만 확인
+        User userEntity = userPersistRepository.findById(sessionUser.getId());
+        if (userEntity == null) {
+            throw new Exception404("사용자를 찾을 수 없습니다.");
         }
+        // 3. 유효성 검사 및 DB 수정
+        updateDto.validate();
+        // 4. 세션 동기화 : 수정된 정보를 세션에 반영
+        User updateUser = userPersistRepository.updateById(sessionUser.getId(), updateDto);
+        updateUser.setPassword(null);
+        // 세션 동기화 처리
+        session.setAttribute(Define.SESSION_USER, updateUser);
+        // 5. 성공 후 메인페이지로 리다이렉트
+        return "redirect:/";
     }
 
     // GET - http://localhost:8080/logout
     @GetMapping("/logout")
     public String logoutForm(HttpSession session) {
-        log.info("=== 로그아웃 요청 ===");
-        // templates/ << 컨텐츠 루트 경로
         session.invalidate(); // 현재 세션을 무효화해서 로그인 정보 제거
-        log.info("로그아웃 완료");
         return "redirect:/";
     }
 }
