@@ -55,7 +55,11 @@
         </div>
     </div>
     <div>
-        <h1 >삭제 권한이 없습니다.</h1>
+        {{#deleteError}}
+            <div class="alert alert-danger mt-3" role="alert">
+                {{deleteError}}
+            </div>
+        {{/deleteError}}
     </div>
 </div>
 

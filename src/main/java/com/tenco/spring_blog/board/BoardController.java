@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -103,9 +104,10 @@ public class BoardController {
     }
 
     // 게시글 삭제
-    // 게시글 삭제
     @PostMapping("/board/{id}/delete")
-    public String delete(@PathVariable Long id, HttpSession session) {
+    public String delete(@PathVariable Long id,
+                         HttpSession session,
+                         RedirectAttributes redirectAttributes) {
         // 1. 인증 검사 (로그인 여부 확인)
         // 2. 권한 확인 -- 로그인 했지만 내가 작성한 글 인지 여부 확인
         // 2.1 - 관리자 광고성 게시글 .. 삭제도 가능 (권한)
@@ -118,7 +120,11 @@ public class BoardController {
             Board boardEntity = boardPersistRepository.findById(id);
             // 3. 권한 체크 : 본인이 작성한 게시글만 삭제
             if (!boardEntity.isOwner(sessionUser.getId())) {
-                throw new RuntimeException("삭제 권한이 없습니다");
+                redirectAttributes.addFlashAttribute(
+                        "deleteError",
+                        "삭제 권한이 없습니다. 본인이 작성한 게시글만 삭제할 수 있습니다."
+                );
+                return "redirect:/board/" + id;
             }
             // 4. 권한 확인 후 삭제 실행
             boardPersistRepository.deleteById(id);
