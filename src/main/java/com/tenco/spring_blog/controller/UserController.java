@@ -88,7 +88,7 @@ public class UserController {
             // 머스태치가 파일에서 세션 메모리에 접근할 수 있도록 설정 추가해야함
             // 4. 로그인 성공 : 세션에 사용자 정보를 저장
             session.setAttribute("sessionUser", sessionUser);
-
+            sessionUser.setPassword(null);
             log.info("로그인한 사용자 : {}", sessionUser.getUsername());
 
             // 5. 메인 페이지로 리다이렉트
@@ -104,12 +104,46 @@ public class UserController {
 
     // GET - http://localhost:8080/user/update
     @GetMapping("/user/update")
-    public String updateForm(Model model) {
-
-        // 뼈대용 임시 데이터
-        model.addAttribute("user", Map.of("username", "김민수", "email", "abc@naver.com"));
-
+    public String updateForm(Model model, HttpSession session) {
+        User user = (User) session.getAttribute("sessionUser");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("user", userPersistRepository.findById(user.getId()));
         return "user/update-form";
+    }
+
+    // POST - http://localhost:8080/user/update
+    @PostMapping("/user/update")
+    public String update(Model model, HttpSession session, UserRequest.UpdateDto updateDto) {
+        // 1. 인증 검사
+        User sessionUser = (User) session.getAttribute("sessionUser");
+        if (sessionUser == null) {
+            return "redirect:/login";
+        }
+        try {
+            // 2. 권한 검사 : 요청 값 대신 세션의 ID로 본인 정보만 수정
+            // 다른 사람의 정보는 처음부터 수정할수 없음 (대상이 실제로 있는지만 확인
+            User userEntity = userPersistRepository.findById(sessionUser.getId());
+            if (userEntity == null) {
+                throw new IllegalArgumentException("사용자를 찾을 수 없습니다.");
+            }
+            // 3. 유효성 검사 및 DB 수정
+            updateDto.validate();
+            // 4. 세션 동기화 : 수정된 정보를 세션에 반영
+            User updateUser = userPersistRepository.updateById(sessionUser.getId(), updateDto );
+            updateUser.setPassword(null);
+            // 세션 동기화 처리
+            session.setAttribute("sessionUser", updateUser);
+            // 5. 성공 후 메인페이지로 리다이렉트
+            return "redirect:/";
+        } catch (Exception e) {
+            // 5.1 예외 발생 (내부 이동)
+            log.error("회원 정보 실패 : {}", e.getMessage());
+            model.addAttribute("user", userPersistRepository.findById(sessionUser.getId()));
+            model.addAttribute("errormessage", e.getMessage());
+            return "user/update-form";
+        }
     }
 
     // GET - http://localhost:8080/logout

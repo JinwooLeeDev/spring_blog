@@ -1,10 +1,7 @@
 package com.tenco.spring_blog.user;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
@@ -22,6 +19,7 @@ public class User {
     // 같은 사용자명을 두 번 가입할 수 없도록 유니크 제약
     @Column(unique = true)
     private String username;
+    @Setter
     private String password;
     @Column(unique = true)
     private String email;
@@ -29,12 +27,21 @@ public class User {
     @CreationTimestamp // now()
     private Timestamp createdAt;
 
+    public void updatePassword(String password) {
+        this.password = password;
+    }
+
     // id 와 createdAt은 자동으로 채워지므로 빌더에서 제외
     @Builder
     public User(String username, String password, String email) {
         this.username = username;
         this.password = password;
         this.email = email;
+    }
+
+    // 회원 정보 수정
+    public void update(String password) {
+        this.password = password;
     }
 
 }
