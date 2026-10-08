@@ -53,7 +53,6 @@ public class UserController {
     // GET - http://localhost:8080/login
     @GetMapping("/login")
     public String loginForm() {
-        // templates/ << 컨텐츠 루트 경로
         return "user/login-form";
     }
 
@@ -89,9 +88,6 @@ public class UserController {
     @GetMapping("/user/update")
     public String updateForm(Model model, HttpSession session) {
         User user = (User) session.getAttribute(Define.SESSION_USER);
-        if (user == null) {
-            return "redirect:/login";
-        }
         model.addAttribute("user", userPersistRepository.findById(user.getId()));
         return "user/update-form";
     }
@@ -101,9 +97,6 @@ public class UserController {
     public String update(Model model, HttpSession session, UserRequest.UpdateDto updateDto) {
         // 1. 인증 검사
         User sessionUser = (User) session.getAttribute(Define.SESSION_USER);
-        if (sessionUser == null) {
-            return "redirect:/login";
-        }
         // 2. 권한 검사 : 요청 값 대신 세션의 ID로 본인 정보만 수정
         // 다른 사람의 정보는 처음부터 수정할수 없음 (대상이 실제로 있는지만 확인
         User userEntity = userPersistRepository.findById(sessionUser.getId());

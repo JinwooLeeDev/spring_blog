@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 // 모든 컨트롤러에서 발생하는 예외를 이 클래스에서 처리 (중앙 집중화)
 @Slf4j
@@ -27,14 +28,14 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception401.class)
-    public String ex401(Exception401 e, HttpServletRequest request, Model model) {
+    public String ex401(Exception401 e, HttpServletRequest request, RedirectAttributes rttr) {
         log.warn("==== 400 Unauthorized 에러 발생 ====");
         log.warn("요청 URL : {}", request.getRequestURL());
         log.warn("인증 오류 : {}", e.getMessage());
         log.warn("예외 클래스 : {}", e.getClass().getSimpleName());
 
-        model.addAttribute("msg", e.getMessage());
-        return "err/401";
+        rttr.addFlashAttribute("errorMessage", e.getMessage());
+        return "redirect:/login";
     }
 
 //    @ExceptionHandler(Exception403.class)
