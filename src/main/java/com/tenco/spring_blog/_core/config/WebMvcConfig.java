@@ -18,6 +18,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     // 내가 정의한 인터셉터를 설정 클래스 등록할 수 있다.
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        // registry.addInterceptor("xxxxxx")
         // LoginInterceptor를 시스템에 등록
         registry.addInterceptor(loginInterceptor)
                 // 인터셉터가 동작할 URL 패턴을 지정
