@@ -34,10 +34,10 @@ public class UserRequest {
                 throw new Exception400("사용자명은 필수 입니다. ");
             }
             if(password == null || password.trim().isEmpty()) {
-                throw new Exception400("사용자명은 필수 입니다. ");
+                throw new Exception400("비밀번호는 필수 입니다. ");
             }
             if(email == null || email.trim().isEmpty()) {
-                throw new Exception400("사용자명은 필수 입니다. ");
+                throw new Exception400("이메일은 필수 입니다. ");
             }
             // 간단하게 이메일 형식 검증
             if(!email.contains("@")) {
@@ -70,7 +70,7 @@ public class UserRequest {
                 throw new Exception400("사용자명은 필수 입니다. ");
             }
             if(password == null || password.trim().isEmpty()) {
-                throw new Exception400("사용자명은 필수 입니다. ");
+                throw new Exception400("비밀번호는 필수 입니다. ");
             }
         }
     }

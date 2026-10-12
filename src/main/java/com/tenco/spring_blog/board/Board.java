@@ -32,7 +32,7 @@ public class Board {
     // N : 1 , 1 : N , N : M
     // LAZY 전략 , EAGER 전략
     // LAZY 전략 : 게시글을 조회할 때 사용자는 바로 조회하지 않고, 실제로 사용하 때 그 때 한번더 조회
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id") // board_tb 에 만들어질 외래키 컬럼 이름 설정
     private User user;
 
