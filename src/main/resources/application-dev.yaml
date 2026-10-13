@@ -22,6 +22,9 @@ spring:
 
   # JPA 설정
   jpa:
+    # true 기본 값 : 뷰 렌더링 까지 영속성 컨텍스트 유지, 지연 로딩 가능
+    # false        : 트랜잭션이 끝나면 영속성 컨텍스트 종료, 지연 로딩 불가
+    open-in-view: true
     hibernate:
       # 시작할 때마다 테이블을 새로 만듭니다. 기존 데이터는 다 지워집니다(개발용)
       ddl-auto: create
