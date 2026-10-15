@@ -62,23 +62,27 @@ public class BoardService {
         return new BoardResponse.DetailDto(board);
     }
 
-    public BoardResponse.PageDto findAllPage(int page, int size) {
+    public BoardResponse.PageDto findAllPage(int page, int size, String keyword) {
         log.info("게시글 목록 조회 시작");
 
         // 1. 1부터 시작하는 번호를 0부터로 변환 (0이하가 들어와도 0으로 보장)
         int pageIndex = Math.max(0, page - 1);
 
         // 2. 페이지 크기는 1 ~ 50 으로 제한 (size = 10000 같은 요청 방어)
-        int validSize = Math.max(1, Math.min(50, size));
+        int validSize = Math.clamp(size, 1, 50);
 
         // 최신 글이 먼저 오도록 id 내림차순 정렬 (주문서 생성)
         Pageable pageable = PageRequest.of(pageIndex, validSize, Sort.by(Sort.Direction.DESC, "id"));
-        // 페이징 처리가 된 게시글 목록 조회 요청 (주문 결과 Page)
-        Page<Board> boardPage = boardJpaRepository.findAllJoinUser(pageable);
-        // 조회 후 트랜잭션 안에서 응답 DTO로 변환 처리
-        BoardResponse.PageDto pageDto = new BoardResponse.PageDto(boardPage);
-        return pageDto;
+        // isBlank() --> null이 아닌 상태에서 공백 제거 후 개수 확인
+        Page<Board> boardPage;
+        if (keyword == null || keyword.isBlank()) {
+            boardPage = boardJpaRepository.findAllJoinUser(pageable);
+        } else {
+            boardPage = boardJpaRepository.findAllKeywordJoinUser(pageable, keyword);
+        }
+        return new BoardResponse.PageDto(boardPage);
     }
+
 
     /**
      * 게시글 수정 화면 요청 (인가 검사)
