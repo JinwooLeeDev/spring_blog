@@ -1,7 +1,12 @@
 package com.tenco.spring_blog.board;
 
 import com.tenco.spring_blog._core.util.MyDateUtil;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.springframework.data.domain.Page;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 게시글 응답 DTO
@@ -11,6 +16,61 @@ import lombok.Data;
  * - 화면에 필요한 값만 담으므로 계층간에 결합도도 낮아진다.
  */
 public class BoardResponse {
+
+    // 게시글 목록 + 페이지 정보 응답 DTO
+    @Data
+    public static class PageDto {
+        private List<ListDto> content; // 현재 페이지의 게시글 목록
+        private int size;              // 페이지 크기
+        private int currentPage;       // 현재 페이지 (1부터 시작)
+        private int totalPages;        // 전체 페이지 수
+        private long totalElements;     // 전체 게시글 수
+        private boolean hasPrevious;   // 이전 페이지 있음 여부
+        private boolean hasNext;       // 다음 페이지 있음 여부
+        private List<PageLink> pagesLinks;    // 화면에 표시할 페이지 번호 목록
+        // 코드 추가
+        private int previousPage;
+        private int nextPage;
+
+        public PageDto(Page<Board> page) {
+            this.content = page.getContent().stream()
+                    .map(ListDto::new)
+                    .toList();
+
+            this.size = page.getSize();
+            this.currentPage = page.getNumber() + 1;   // 0 부터 시작 + 1  (사용자에게는 1로 표시)
+            this.totalPages = page.getTotalPages();
+            this.totalElements = page.getTotalElements();
+            this.hasPrevious = page.hasPrevious();
+            this.hasNext = page.hasNext();
+            this.previousPage = currentPage - 1;
+            this.nextPage = currentPage + 1;
+            this.pagesLinks = makePageLinks(currentPage, totalPages);
+        }
+
+        // 편의 메서드 : 현재 페이지를 가운데 두고 앞뒤 2개씩, 최대 5개의 페이지 링크 생성
+        private List<PageLink> makePageLinks(int currentPage, int totalPages) {
+            List<PageLink> links = new ArrayList<>();
+            //                       1,    2 - 2  =  0
+            int startPage = Math.max(1, currentPage - 2); // 1보다 작아지지 않게
+            //                        5,   4      + 2  = 6
+            int endPage = Math.min(totalPages, currentPage + 2); // 전체 페이지를 넘지 않게
+            for (int i = startPage; i <= endPage; i++) {
+                links.add(new PageLink(i, i == currentPage));
+            }
+            return links;
+        }
+
+    } // end of PageDto
+
+    // 페이지 번호 버튼 하나의 정보
+    @Data
+    @AllArgsConstructor
+    public static class PageLink {
+        private int number; // 표시할 페이지 번호 (1부터)
+        private boolean active; // 현재 페이지 여부 (강조 표시용)
+    }
+
 
     @Data
     public static class ListDto {
@@ -29,6 +89,8 @@ public class BoardResponse {
             this.createdAt = board.getTime();
         }
     }
+
+
 
     // 게시글 상세 응답 DTO
     @Data

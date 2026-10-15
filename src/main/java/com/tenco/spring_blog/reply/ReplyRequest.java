@@ -32,7 +32,5 @@ public class ReplyRequest {
                     .user(user)
                     .build();
         }
-
     }
-
 }

@@ -8,6 +8,10 @@ import com.tenco.spring_blog.user.User;
 import com.tenco.spring_blog.user.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,34 +63,23 @@ public class BoardService {
         return new BoardResponse.DetailDto(board);
     }
 
-
     /**
-     * 게시글 목록 조회(메인 페이지용)
+     * 게시글 목록 조회 페이징 처리(메인 페이지용)
      * @return 게시글 목록(작성자 정보 포함)
      */
-    public List<BoardResponse.ListDto> findAll() {
+    public BoardResponse.PageDto findAllPage(int page, int size) {
         log.info("게시글 목록 조회 시작");
-        List<Board> boardList = boardJpaRepository.findAllJoinUser();
+        // 1. 1부터 시작하는 번호를  0부터로 변환 (0 이하가 들어와도 0으로 보장)
+        int pageIndex = Math.max(0, page - 1);
+        int validSize = Math.max(1, Math.min(50, size));
+        // 최신 글이 먼저 오도록 id 내림차순 정렬 (주문서 생성)
+        Pageable pageable =  PageRequest.of(pageIndex, validSize, Sort.by(Sort.Direction.DESC, "id"));
+        // 페이징 처리가 된 게시글 목록 조회 요청 (주문 결과 Page)
+        Page<Board> boardPage = boardJpaRepository.findAllJoinUser(pageable);
+        // 조회 후 트랜잭션 안에서 응답 DTO로 변환 처리
+        BoardResponse.PageDto pageDto = new BoardResponse.PageDto(boardPage);
         // 방법 1 메서드 참조 문법
-        return boardList.stream()
-                .map(BoardResponse.ListDto::new)
-                .toList();
-
-        // 방법 2 람다 표현식 (스트림 API 활용)
-        //List<BoardResponse.ListDto> dtoList = new ArrayList<>();
-//         dtoList =  boardList.stream()
-//                .map(board -> new BoardResponse.ListDto(board))
-//                .toList();
-
-        // 방법 3
-//        List<BoardResponse.ListDto> dtoList = new ArrayList<>();
-//        for (Board board : boardList) {
-//            dtoList.add(new BoardResponse.ListDto(board));
-//        }
-
-
-//        log.info("게시글 목록 조회 완료");
-//        return boardList;
+        return pageDto;
     }
 
     /**
