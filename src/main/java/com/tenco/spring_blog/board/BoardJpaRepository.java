@@ -46,4 +46,17 @@ public interface BoardJpaRepository extends JpaRepository<Board, Long> {
     Page<Board> findAllJoinUser(Pageable pageable);
 
 
+    // 게시글 검색 + 페이징 조회(작성자 함께 조인해서 조회)
+    // 정렬은 Pageable 에 담아서 전달하므로 쿼리에 ORDER BY를 쓰지 않음 !!
+    @Query(value = """
+                     SELECT b FROM Board b JOIN FETCH b.user
+                     WHERE b.title LIKE CONCAT('%', :keyword, '%')
+                     OR    b.content LIKE CONCAT('%', :keyword, '%')""",
+            countQuery = """
+                    SELECT COUNT(b) FROM Board b 
+                    WHERE b.title LIKE CONCAT('%', :keyword, '%')
+                    OR    b.content LIKE CONCAT('%', :keyword, '%')
+                    """)
+    Page<Board> findAllKeywordJoinUser(Pageable pageable, @Param("keyword") String keyword);
+
 }

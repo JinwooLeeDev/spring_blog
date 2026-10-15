@@ -67,20 +67,24 @@ public class BoardService {
      * 게시글 목록 조회 페이징 처리(메인 페이지용)
      * @return 게시글 목록(작성자 정보 포함)
      */
-    public BoardResponse.PageDto findAllPage(int page, int size) {
+    public BoardResponse.PageDto findAllPage(int page, int size, String keyword) {
         log.info("게시글 목록 조회 시작");
         // 1. 1부터 시작하는 번호를  0부터로 변환 (0 이하가 들어와도 0으로 보장)
         int pageIndex = Math.max(0, page - 1);
         int validSize = Math.max(1, Math.min(50, size));
         // 최신 글이 먼저 오도록 id 내림차순 정렬 (주문서 생성)
         Pageable pageable =  PageRequest.of(pageIndex, validSize, Sort.by(Sort.Direction.DESC, "id"));
-        // 페이징 처리가 된 게시글 목록 조회 요청 (주문 결과 Page)
-        Page<Board> boardPage = boardJpaRepository.findAllJoinUser(pageable);
-        // 조회 후 트랜잭션 안에서 응답 DTO로 변환 처리
-        BoardResponse.PageDto pageDto = new BoardResponse.PageDto(boardPage);
-        // 방법 1 메서드 참조 문법
-        return pageDto;
+        // isBlank() --> null 이 아닌 상태에서 공백 제거 후 개수 확인
+        // "    "  <---
+        Page<Board> boardPage;
+        if (keyword == null || keyword.isBlank()) {
+            boardPage = boardJpaRepository.findAllJoinUser(pageable);
+        } else {
+            boardPage = boardJpaRepository.findAllKeywordJoinUser(pageable, keyword);
+        }
+        return new BoardResponse.PageDto(boardPage);
     }
+
 
     /**
      * 게시글 수정 화면 요청 (인가 검사)
