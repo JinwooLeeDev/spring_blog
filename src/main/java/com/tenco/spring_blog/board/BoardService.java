@@ -1,6 +1,5 @@
 package com.tenco.spring_blog.board;
 
-import com.tenco.spring_blog._core.error.Exception400;
 import com.tenco.spring_blog._core.error.Exception403;
 import com.tenco.spring_blog._core.error.Exception404;
 import com.tenco.spring_blog.user.SessionUserDto;
@@ -8,10 +7,13 @@ import com.tenco.spring_blog.user.User;
 import com.tenco.spring_blog.user.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -48,49 +50,39 @@ public class BoardService {
 
     /**
      * 게시글 상세 조회
-     * @param id  게시글 PK
+     *
+     * @param id 게시글 PK
      * @return 게시글 정보 (작성자 정보 포함)
      */
     public BoardResponse.DetailDto findById(Long id) {
         log.info("게시글 상세 조회 서비스 - ID : {} ", id);
         Board board = boardJpaRepository.findByIdJoinUser(id)
-                        .orElseThrow(() -> new Exception404("게시글을 찾을 수 없습니다"));
+                .orElseThrow(() -> new Exception404("게시글을 찾을 수 없습니다"));
         log.info("게시글 상세 조회 완료 - 제목 : {}, 작성자 : {} ", board.getTitle(), board.getUser().getUsername());
         return new BoardResponse.DetailDto(board);
     }
 
-
-    /**
-     * 게시글 목록 조회(메인 페이지용)
-     * @return 게시글 목록(작성자 정보 포함)
-     */
-    public List<BoardResponse.ListDto> findAll() {
+    public BoardResponse.PageDto findAllPage(int page, int size) {
         log.info("게시글 목록 조회 시작");
-        List<Board> boardList = boardJpaRepository.findAllJoinUser();
-        // 방법 1 메서드 참조 문법
-        return boardList.stream()
-                .map(BoardResponse.ListDto::new)
-                .toList();
 
-        // 방법 2 람다 표현식 (스트림 API 활용)
-        //List<BoardResponse.ListDto> dtoList = new ArrayList<>();
-//         dtoList =  boardList.stream()
-//                .map(board -> new BoardResponse.ListDto(board))
-//                .toList();
+        // 1. 1부터 시작하는 번호를 0부터로 변환 (0이하가 들어와도 0으로 보장)
+        int pageIndex = Math.max(0, page - 1);
 
-        // 방법 3
-//        List<BoardResponse.ListDto> dtoList = new ArrayList<>();
-//        for (Board board : boardList) {
-//            dtoList.add(new BoardResponse.ListDto(board));
-//        }
+        // 2. 페이지 크기는 1 ~ 50 으로 제한 (size = 10000 같은 요청 방어)
+        int validSize = Math.max(1, Math.min(50, size));
 
-
-//        log.info("게시글 목록 조회 완료");
-//        return boardList;
+        // 최신 글이 먼저 오도록 id 내림차순 정렬 (주문서 생성)
+        Pageable pageable = PageRequest.of(pageIndex, validSize, Sort.by(Sort.Direction.DESC, "id"));
+        // 페이징 처리가 된 게시글 목록 조회 요청 (주문 결과 Page)
+        Page<Board> boardPage = boardJpaRepository.findAllJoinUser(pageable);
+        // 조회 후 트랜잭션 안에서 응답 DTO로 변환 처리
+        BoardResponse.PageDto pageDto = new BoardResponse.PageDto(boardPage);
+        return pageDto;
     }
 
     /**
      * 게시글 수정 화면 요청 (인가 검사)
+     *
      * @param id
      * @param userId
      * @return
@@ -108,8 +100,9 @@ public class BoardService {
 
     /**
      * 게시글 수정 기능 요청 (권한 체크)
-     * @param id 게시글 PK
-     * @param updateDto 수정할 정보
+     *
+     * @param id          게시글 PK
+     * @param updateDto   수정할 정보
      * @param sessionUser 요청자 정보
      * @return 수정된 게시글
      */
@@ -137,7 +130,7 @@ public class BoardService {
                     id, board.getUser().getUsername(), sessionUser.getUsername());
             throw new Exception403("본인이 작성한 게시글만 삭제할 수 있습니다");
         }
-        boardJpaRepository.deleteById(id);
+        boardJpaRepository.delete(board);
         log.info("게시글 삭제 종료");
     }
 

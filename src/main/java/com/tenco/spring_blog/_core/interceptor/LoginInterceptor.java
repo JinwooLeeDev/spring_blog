@@ -14,7 +14,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 @Component // IoC (싱글톤으로 관리)
 public class LoginInterceptor implements HandlerInterceptor {
-
     // 컨트롤러단에 들어가기전에 동작
     // (단, 설정 클래스에 등록되어 있고 지정한 URL 패턴에 해당할 때만 동작)
     // return true ---> 컨트롤러 안으로 들여 보낸다, false --> 컨트롤러 안으로 못 들어간다.

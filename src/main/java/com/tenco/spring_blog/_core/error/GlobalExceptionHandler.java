@@ -43,6 +43,24 @@ public class GlobalExceptionHandler {
         return "redirect:/login";
     }
 
+    @ExceptionHandler(UnauthorizedException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ResponseBody
+    public String exUnauthorized(Exception401 e, HttpServletRequest request) {
+        log.warn("==== 401 (Data 반환) Unauthorized 에러 발생 ====");
+        log.warn("요청 URL : {}", request.getRequestURL());
+        log.warn("인증 오류 : {}", e.getMessage());
+        log.warn("예외 클래스 : {}", e.getClass().getSimpleName());
+
+        String msg = e.getMessage().replace("'", "\\'"); // 따옴표 깨짐 방지
+        return """
+                <script>
+                    alert('%s');
+                    location.href = '/login'
+                </script>    
+                """.formatted(msg);
+    }
+
 
 //    @ExceptionHandler(Exception403.class)
 //    public String ex403(Exception403 e, HttpServletRequest request, Model model) {

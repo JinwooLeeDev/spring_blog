@@ -2,15 +2,15 @@ package com.tenco.spring_blog.board;
 
 import com.tenco.spring_blog._core.error.Exception403;
 import com.tenco.spring_blog._core.util.Define;
+import com.tenco.spring_blog.reply.ReplyResponse;
+import com.tenco.spring_blog.reply.ReplyService;
 import com.tenco.spring_blog.user.SessionUserDto;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -21,11 +21,14 @@ import java.util.List;
 public class BoardController {
 
     private final BoardService boardService;
+    private final ReplyService replyService;
 
     @GetMapping({"/", "/board/list"})
-    public String list(Model model) {
-        List<BoardResponse.ListDto> boardList = boardService.findAll();
-        model.addAttribute("boardList", boardList);
+    public String list(@RequestParam(name = "page", defaultValue = "1") int page,
+                       @RequestParam(name = "size", defaultValue = "3") int size,
+                       Model model) {
+        BoardResponse.PageDto pageDto = boardService.findAllPage(page, size);
+        model.addAttribute("boardPage", pageDto);
         return "board/list";
     }
 
@@ -35,6 +38,11 @@ public class BoardController {
     public String detail(@PathVariable(name = "id") Long id, Model model, HttpSession session) {
         BoardResponse.DetailDto detailDto = boardService.findById(id);
         SessionUserDto sessionUserDto = (SessionUserDto) session.getAttribute(Define.SESSION_USER);
+
+        Long sessionUserId = sessionUserDto != null ? sessionUserDto.getId() : null;
+        List<ReplyResponse.ListDto> replyList = replyService.findAllByBoardId(id, sessionUserId);
+        model.addAttribute("replyList", replyList);
+
         // 로그인을 했고, 작성자 본인일 때만 수정, 삭제 버튼 표시
         boolean isOwner = sessionUserDto != null && detailDto.getUserId().equals(sessionUserDto.getId());
         model.addAttribute("board", detailDto);

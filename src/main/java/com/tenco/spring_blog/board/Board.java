@@ -2,15 +2,20 @@ package com.tenco.spring_blog.board;
 
 
 import com.tenco.spring_blog.user.User;
+import com.tenco.spring_blog.reply.Reply;
 import com.tenco.spring_blog._core.util.MyDateUtil;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
+import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 // 엔티티 클래스 만들기 : 데이터베이스 테이블 한 개를 자바 클래스로 그린 설계도
@@ -35,6 +40,9 @@ public class Board {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id") // board_tb 에 만들어질 외래키 컬럼 이름 설정
     private User user;
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.REMOVE)
+    private List<Reply> reply = new ArrayList<>();
 
     // now() <-- 사용하지 않아도 자동으로 PC --> DB 날짜 주입
     @CreationTimestamp
