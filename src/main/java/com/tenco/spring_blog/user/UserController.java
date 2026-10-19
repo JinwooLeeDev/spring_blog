@@ -17,7 +17,8 @@ public class UserController {
     private final UserService userService;
 
     // 프로필 삭제
-    @PostMapping("/usewr/profile-image/delete")
+    // POST http://localhost:8080/user/profile-image/delete
+    @PostMapping("/user/profile-image/delete")
     public String deleteProfileImage(HttpSession session) {
         SessionUserDto sessionUserDto = (SessionUserDto) session.getAttribute(Define.SESSION_USER);
         userService.deleteProfileImage(sessionUserDto.getId());
