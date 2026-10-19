@@ -8,7 +8,7 @@ logging:
 
 
 spring:
-  # 데이터 베이스 연결 (H2 메모리 DB 사용)
+  # 데이터 베이스 연결 (MYSQL DB 사용)
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${DB_URL}
