@@ -85,7 +85,6 @@ public class BoardController {
     @PostMapping("/board/{id}/update")
     public String update(@PathVariable Long id,
                          BoardRequest.UpdateDto updateDto, HttpSession session) {
-
         updateDto.validate();
         SessionUserDto sessionUserDto = (SessionUserDto) session.getAttribute(Define.SESSION_USER);
         boardService.updateById(id, updateDto, sessionUserDto);

@@ -29,11 +29,22 @@ public class User {
     private Timestamp createdAt;
 
     // id 와 createdAt은 자동으로 채워지므로 빌더에서 제외
+
+    // 프로필 이미지 파일 이름 (선택 사항이므로 null 가능)
+    private String profileImage;
+
+    // id 와 createdAt은 자동으로 채워지므로 빌더에서 제외
     @Builder
-    public User(String username, String password, String email) {
+    public User(String username, String password, String email, String profileImage) {
         this.username = username;
         this.password = password;
         this.email = email;
+        this.profileImage = profileImage;
+    }
+
+    // 프로필 이미지 변경(null 이면 삭제) - 트랜잭션 안에서 호출하면 더티 체킹 발생 됨
+    public void updateProfileImage(String profileImage) {
+        this.profileImage = profileImage;
     }
 
     // 회원 정보 수정 (변경 감지용)
