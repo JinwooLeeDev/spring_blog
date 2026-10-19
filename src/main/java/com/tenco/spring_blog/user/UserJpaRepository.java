@@ -32,7 +32,10 @@ public interface UserJpaRepository extends JpaRepository<User, Long> {
      */
 
       // 사용자명과 비밀번호로 조회 (로그인용)
-      @Query("SELECT u FROM User u WHERE u.username = :username AND u.password = :password")
+      @Query("""
+            SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.roles 
+                    WHERE u.username = :username AND u.password = :password
+        """)
       Optional<User> findByUsernameAndPassword(@Param("username") String username, @Param("password") String password);
 
       // 사용자명으로 사용자 조회(중복 체크용)
