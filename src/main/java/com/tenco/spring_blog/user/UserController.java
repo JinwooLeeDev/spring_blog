@@ -1,9 +1,11 @@
 package com.tenco.spring_blog.user;
 
 import com.tenco.spring_blog._core.util.Define;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +17,30 @@ import org.springframework.web.bind.annotation.PostMapping;
 public class UserController {
 
     private final UserService userService;
+
+    // application.yml 의 변수를 가지고 올 때 사용
+    @Value("${oauth.kakao.client-id}")
+    private String kakaoClientId;
+
+    @Value("${oauth.kakao.redirect-uri}")
+    private String redirectUri;
+
+    // 테스트 용
+    // 서버가 시작될 때 한 번 실행되어 콘솔에 값이 찍힌다.
+    @PostConstruct
+    public void init() {
+        log.info("카카오 REST API 키 확인 :  {} ", kakaoClientId);
+        log.info("카카오 redirect-uri :  {} ", redirectUri);
+    }
+
+    @GetMapping("/kakao-login")
+    public String kakaoLogin() {
+        String url = "https://kauth.kakao.com/oauth/authorize"
+                + "?client_id=" + kakaoClientId
+                + "&redirect_uri=" + redirectUri
+                + "&response_type=code";
+        return "redirect:" + url;
+    }
 
     // 프로필 삭제
     @PostMapping("/user/profile-image/delete")
