@@ -2,6 +2,7 @@ package com.tenco.spring_blog.user;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Timestamp;
@@ -41,14 +42,20 @@ public class User {
     @JoinColumn(name = "user_id", nullable = false)
     private List<UserRole> roles = new ArrayList<>();
 
+    // 가입 경로 (DB 에는 LOCAL, KAKAO 문자열로 저장)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @ColumnDefault("'LOCAL'") // 문자열이므로 안에 작은따옴표 필수 !
+    private OAuthProvider provider;
 
     // id 와 createdAt은 자동으로 채워지므로 빌더에서 제외
     @Builder
-    public User(String username, String password, String email, String profileImage) {
+    public User(String username, String password, String email, String profileImage, OAuthProvider provider) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.profileImage = profileImage;
+        this.provider = (provider == null) ? OAuthProvider.LOCAL : provider;
     }
 
     // 회원 정보 수정 (변경 감지용)
@@ -83,6 +90,16 @@ public class User {
     // 로인한 사용자의 관리자 여부 확인 메서드
     public boolean isAdmin() {
         return hasRole(Role.ADMIN); // 고정 값 : 관리자 여부인지만 확인 true , false 반환
+    }
+
+    public String getProfilePath() {
+        if (this.profileImage == null) {
+            return null;
+        }
+        if (this.profileImage.startsWith("http")) {
+            return this.profileImage;
+        }
+        return "/images/" + this.profileImage;
     }
 
 }
