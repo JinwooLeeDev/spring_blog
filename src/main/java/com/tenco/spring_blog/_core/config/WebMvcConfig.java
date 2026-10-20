@@ -1,5 +1,6 @@
 package com.tenco.spring_blog._core.config;
 
+import com.tenco.spring_blog._core.interceptor.AdminInterceptor;
 import com.tenco.spring_blog._core.interceptor.LoginInterceptor;
 import com.tenco.spring_blog._core.interceptor.SessionUserModelInterceptor;
 import com.tenco.spring_blog._core.util.FileUtil;
@@ -20,6 +21,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     private final LoginInterceptor loginInterceptor;
     private final SessionUserModelInterceptor sessionUserModelInterceptor;
+    private final AdminInterceptor adminInterceptor;
 
     // 업로드 폴더의 파일일 /images/** 주소로 제공
     @Override
@@ -40,9 +42,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
 
+        // 1. 화면에 사용자 정보 자동 주입 인터셉터
         registry.addInterceptor(sessionUserModelInterceptor)
                         .addPathPatterns("/**"); // 모든 경로
 
+        // 2. 로그인 검사
         registry.addInterceptor(loginInterceptor)
                 // 인터셉터가 동작할 URL 패턴을 지정
                 .addPathPatterns("/user/**", "/board/**", "/reply/**", "/admin/**")
@@ -51,6 +55,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 // \\d+ 는 정규표현식으로 1개 이상의 숫자를 의미한다.
                 // 예: /board/1, /board/123 (상세보기)은 로그인 없이도 접근 가능
                 //  /board/1/update 처럼 뒤에 경로가 더 붙으면 제외 대상이 아니게 된다.
+
+        // 3. 관리자 검사 : 로그인 검사 다음에 등록 (등록한 순서대로 실행 됨)
+        registry.addInterceptor(adminInterceptor)
+                .addPathPatterns("/admin/**");
     }
 
 }

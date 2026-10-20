@@ -42,7 +42,6 @@ public class User {
     private List<UserRole> roles = new ArrayList<>();
 
 
-
     // id 와 createdAt은 자동으로 채워지므로 빌더에서 제외
     @Builder
     public User(String username, String password, String email, String profileImage) {
