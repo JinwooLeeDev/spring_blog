@@ -64,10 +64,10 @@ public class UserRequest {
         // DTO 에서 User 엔티티로 변환하는 메서드
         // 계층 간 데이터 변환을 명확하게 분리하는 것이 좋다.
         // toEntity() <-- 메서드 이름 (이 메서드를 호출하면 User 객체를 반환하는 코드를 작성하시오)
-        public User toEntity(String profileImageFilename) {
+        public User toEntity(String profileImageFilename, String encodePassword) {
             return User.builder()
                     .username(username)
-                    .password(password)
+                    .password(encodePassword)
                     .email(email)
                     .profileImage(profileImageFilename)
                     .build();
