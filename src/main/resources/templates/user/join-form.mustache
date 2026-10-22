@@ -64,13 +64,12 @@
             const result = await response.json(); // JSON 응답 ---> 자바스크립 객체로 변환 됨.
             // 백엔드 개발자와 어떤 식으로 요청을 보내고 어떤 식으로 응답이 올지 확인 해야 한다.
             // 백엔드 API 에서 key : message 로 내려 보내기로 했다.
-            // alert(result.message);
+            alert(result.message);
             if (response.ok) {
                 document.querySelector("#code-box").style.display = "block";
             }
-
-
         } catch (e) {
+
             alert("서버와 통신하지 못했습니다");
         } finally {
            sendBtn.disabled = false;
@@ -110,6 +109,7 @@
                msgBox.className = "form-text text-danger";
            }
         } catch (e) {
+            console.log(e);
             alert("서버와 통신하지 못했습니다");
         }
     }

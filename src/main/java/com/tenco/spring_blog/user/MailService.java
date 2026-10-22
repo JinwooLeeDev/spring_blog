@@ -1,6 +1,7 @@
 package com.tenco.spring_blog.user;
 
 
+import com.tenco.spring_blog._core.error.Exception400;
 import com.tenco.spring_blog._core.error.Exception500;
 import com.tenco.spring_blog._core.util.Define;
 import com.tenco.spring_blog._core.util.MailUtil;
@@ -12,6 +13,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import java.io.Serializable;
+import java.time.LocalDateTime;
+
 // 메일 발송, 인증번호 확인
 @Slf4j
 @RequiredArgsConstructor
@@ -20,6 +24,16 @@ public class MailService {
 
     // 의존성 설정, application.yaml 의 spring.mail 설정으로 스프링 부트가 만들어준 빈 객체이다.
     private final JavaMailSender javaMailSender;
+
+    // record 문법 : JDK 16 정식으로 사용할 수 있음
+    // 이 아래 한줄이 클래스를 설계해 준다. 필드 + getter + equals + hashCode + toString 을 가진 녀셕을
+    // 자바가 대신 만들어 준다. (대신 setter 가 없다)
+    private record EmailCode(String code, LocalDateTime expiresAt) implements Serializable {
+        boolean isExpired() {
+            return LocalDateTime.now().isAfter(expiresAt);
+        }
+    }
+
 
     // 1. 인증번호 발송
     public void sendVerificationCode(String email, HttpSession session) {
@@ -32,7 +46,8 @@ public class MailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, false, "UTF-8");
             helper.setTo(email); // 받는 사람 이메일 주소
             helper.setSubject("[스프링블로그] 회원가입 인증번호"); // 제목
-            helper.setText("<h3>인증번호는 " + code + " 입니다</h3>", true); // 본문
+            helper.setText("<h3>인증번호는 " + code + " 입니다</h3>" +
+                    "<p>" +  Define.CODE_EXPIRE_MINUTES + " 분 안에 입력해주세요 </p>", true); // 본문
 
             // 1-3 발송 (실패하면 ... )
             javaMailSender.send(message);
@@ -41,35 +56,32 @@ public class MailService {
             throw new Exception500("메일 작성 중 오류가 발생했습니다");
         }
 
-        session.setAttribute(Define.EMAIL_CODE_PREFIX + email, code);
+        session.setAttribute(Define.EMAIL_CODE_PREFIX + email,
+                new EmailCode(code, LocalDateTime.now().plusMinutes(Define.CODE_EXPIRE_MINUTES))); // 분
+
         log.info("인증번호 발송 완료 - 이메일 :  {}", email); // 인증 번호 자체는 로그에 안남기는 게 좋음
     }
 
     // 2. 인증번호 확인 : 일치하면 true
     public boolean verifyCode(String email, String code, HttpSession session) {
-      String savedCode = (String) session.getAttribute(Define.EMAIL_CODE_PREFIX + email);
+      String key = Define.EMAIL_CODE_PREFIX + email;
+      EmailCode savedEmailCode = (EmailCode) session.getAttribute(key);
+
       // emailCode_a@naver.com : 123456
-      if (savedCode == null || !savedCode.equals(code)) {
-          return false;
+      if (savedEmailCode == null) {
+          throw new Exception400("인증번호를 먼저 요청해주세요");
       }
-      // 사용한 인증번호는 삭제 (한 번만 쓸 수 있게)
-      session.removeAttribute(Define.EMAIL_CODE_PREFIX + email);
+      if (savedEmailCode.isExpired()) {
+          session.removeAttribute(key); // 만료된 인증 번호는 세션에서 삭제
+          throw new Exception400("인증번호가 만료되었습니다. 다시 요청해주세요");
+      }
+      if (!savedEmailCode.code().equals(code)) {
+          throw new Exception400("인증번호가 일치하지 않습니다");
+      }
+      // 성공 :  사용한 인증번호는 삭제 (한 번만 쓸 수 있게)
+      session.removeAttribute(key);
       // 인증을 마친 이메일을 세션에 기록해야 함 (회원가입 시 서버가 확인) - 인증된 이메일이 아닌 변조해서 던질 수 있음
       session.setAttribute(Define.VERIFIED_EMAIL, email);
       return true;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
