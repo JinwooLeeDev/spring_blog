@@ -191,6 +191,14 @@ public class UserService {
         newUser.addRole(Role.USER);
         return userJpaRepository.save(newUser);
     }
+
+    // 이메일 사용 가능 영부 (인증번호 발송 전)
+    public void checkEmailAvailable(String email) {
+        userJpaRepository.findByEmail(email)
+                .ifPresent(user -> {
+                    throw new Exception400("이미 등록된 이메일입니다");
+                });
+    }
 }
 
 
