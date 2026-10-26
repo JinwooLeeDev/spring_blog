@@ -9,7 +9,7 @@ spring:
       max-file-size: 10MB   # 파일 하나의 최대 크기
       max-request-size: 11MB # 요청 전체 (파일 + 입력값)의 최대 크기
   profiles:
-    active: dev
+    active: local
   # 메일 발송 설정 (추가)
   mail:
     host: smtp.gmail.com        # Gmail SMTP 서버 주소
