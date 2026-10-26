@@ -146,6 +146,22 @@ public class GlobalExceptionHandler {
     }
 
 
+    @ExceptionHandler(NotEnoughPointException.class)
+    @ResponseBody
+    public String ex403(NotEnoughPointException e, HttpServletRequest request, Model model) {
+        log.warn("==== NotEnoughPointException 에러 발생 ====");
+        log.warn("요청 URL : {}", request.getRequestURL());
+        log.warn("권한 오류 : {}", e.getMessage());
+        log.warn("예외 클래스 : {}", e.getClass().getSimpleName());
+        String msg = e.getMessage().replace("'", "\\'"); // 따옴표 깨짐 방지
+        return """
+                <script>
+                    alert('%s');
+                    history.back();
+                </script>    
+                """.formatted(msg);
+    }
+
 
 
     // 오류 화면에서도 헤더의 로그인 메뉴가 보이도록 sessionUserDto를 Model 에 추가

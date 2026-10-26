@@ -1,5 +1,7 @@
 package com.tenco.spring_blog.user;
 
+import com.tenco.spring_blog._core.error.Exception400;
+import com.tenco.spring_blog._core.error.NotEnoughPointException;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -47,6 +49,10 @@ public class User {
     @Column(nullable = false)
     @ColumnDefault("'LOCAL'") // 문자열이므로 안에 작은따옴표 필수 !
     private OAuthProvider provider;
+
+    @Column(nullable = false)
+    @ColumnDefault("0")
+    private int point;
 
     // id 와 createdAt은 자동으로 채워지므로 빌더에서 제외
     @Builder
@@ -102,4 +108,21 @@ public class User {
         return "/images/" + this.profileImage;
     }
 
+    // 포인트 관련 편의 메서드 추가
+    public void chargePoint(int amount) {
+        if (amount <= 0) {
+            throw new Exception400("충전할 포인트는 0보다 커야 합니다");
+        }
+        this.point += amount;
+    }
+
+    public void deductPoint(int amount) {
+        if (amount <= 0) {
+            throw new Exception400("차감할 포인트는 0보다 커야 합니다");
+        }
+        if (this.point < amount) {
+            throw new NotEnoughPointException("마이 페이지에서 충전 후 다시 시도해주세요");
+        }
+        this.point -= amount;
+    }
 }

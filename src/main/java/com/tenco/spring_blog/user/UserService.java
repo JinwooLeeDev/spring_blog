@@ -102,6 +102,7 @@ public class UserService {
 
     /**
      * 회원 정보 수정 화면 : 화면에 필요한 값만 담는 DTO 반환
+     *
      * @param userId
      * @return
      */
@@ -113,7 +114,7 @@ public class UserService {
     /**
      * 회원 정보 수정 처리 (Dirty Checking 활용)
      *
-     * @param id 사용자 PK
+     * @param id        사용자 PK
      * @param updateDto 수정할 정보
      * @return 수정된 사용자 정보
      */
@@ -139,6 +140,7 @@ public class UserService {
 
     /**
      * 사용자 정보 조회
+     *
      * @param id 사용자 PK
      * @return 사용자 정보
      */
@@ -201,6 +203,14 @@ public class UserService {
                 .ifPresent(user -> {
                     throw new Exception400("이미 등록된 이메일입니다");
                 });
+    }
+
+    @Transactional
+    public int chargePoint(Long userId, Integer amount) {
+        User user = findById(userId);
+        user.chargePoint(amount); // 더티 체킹으로 UPDATE 됨
+        log.info("포인트 충전 완료 - 사용자 ID : {}, 충전 : {} ,  보유 포인트 : {}", userId, amount, user.getPoint());
+        return user.getPoint();
     }
 }
 

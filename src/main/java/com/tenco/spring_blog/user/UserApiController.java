@@ -47,6 +47,27 @@ public class UserApiController {
         return ResponseEntity.ok().body(Map.of("message", "인증되었습니다"));
     }
 
+    // POST http://localhost:8080/api/point/charge
+    // 요청 바디 :  {"amount" : 1000}
+    @PostMapping("/api/point/charge")
+    // json 바디에 데이터를 추출하려면 (약속)
+    public ResponseEntity<?> chargePoint(@RequestBody UserRequest.PointChargeDto chargeDto, HttpSession session) {
+        // 1. 인증검사
+        SessionUserDto sessionUserDto = (SessionUserDto) session.getAttribute(Define.SESSION_USER);
+        if (sessionUserDto == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "로그인이 필요합니다"));
+        }
+        // 2. 유효성 검사
+        chargeDto.validate();
+        // 3. 서비스단에 위임
+        int point = userService.chargePoint(sessionUserDto.getId(), chargeDto.getAmount());
+
+        // 4. 응답 처리
+        return ResponseEntity.ok(Map.of("message", "포인트가 충전되었습니다", "point", point));
+    }
+
+
 
     // ========= 이 컨트롤러에서 발생한 예외는 JSON 으로 별도 응답 처리 ===========
     @ExceptionHandler(Exception400.class)
@@ -60,6 +81,8 @@ public class UserApiController {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("message", "메일 발송 중 오류가 발생했습니다."));
     }
+
+
 
 }
 
