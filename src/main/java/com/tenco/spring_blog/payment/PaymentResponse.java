@@ -1,5 +1,8 @@
 package com.tenco.spring_blog.payment;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jdk.jfr.DataAmount;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
@@ -24,8 +27,25 @@ public class PaymentResponse {
 
     // 3단계 응답 : 충전 결과
     @Data
+    @AllArgsConstructor
     public static class CompleteDto {
         private int amount; // 충전된 포인트
         private int currentPoint; // 충전 후 보유 포인트
     }
+
+    // 포트원 V2 결제 단건 조회 응답 (필요한 필드만 사용)
+    @Data
+    public static class PortOnePayment {
+        private String id; // paymentId
+        private String status; // READY, PAID, FAILED, CANCELLED 등 날라옴
+        private String pgTxId; // PG사 거래 번호
+        private Amount amount;
+
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Amount {
+            private Integer total;
+        }
+    }
+
 }

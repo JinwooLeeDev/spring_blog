@@ -4,12 +4,6 @@
     <div class="card">
         <div class="card-header"><h4 class="mb-0"><b>포인트 충전</b></h4></div>
         <div class="card-body">
-            <label class="form-label fw-bold">현재 보유 포인트</label>
-            <div class="mb-4">
-                <span class="badge bg-primary fs-5"> P</span>
-            </div>
-            <hr>
-
             <div class="mb-4">
                 <label class="form-label fw-bold mb-3">충전할 포인트 선택</label>
                 <!--  이벤트 위임 방식으로 수정 -->
@@ -104,11 +98,16 @@
                 alert("포인트 충전에 실패했습니다");
             }
 
-            // 안내 문구 ... alert()...
-            // location.href = "/user/detail";
+            alert("충전이 완료되었습니다\n충전금액:"
+                    +result.amount.toLocaleString()
+                    +"\n현재보유포인트 : " + result.currentPoint);
+
+            location.href = "/user/detail";
 
         } catch (e) {
-
+            alert(e.message +  " : 서버와 통신하지 못했습니다");
+        } finally {
+           chargeBtn.disabled = false;
         }
 
     });
