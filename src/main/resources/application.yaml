@@ -40,3 +40,15 @@ oauth:
     client-secret: ${KAKAO_CLIENT_SECRET}
     redirect-uri: ${REDIRECT_URI}
 
+# 포트원 V2 (결제 설정)
+# ":" 뒤가 비어 있으면 .env 에 값이 없어도 서버는 시작 됨 (결제할 때 실패)
+portone:
+  store-id: ${PORTONE_STORE_ID:}
+  channel-key: ${PORTONE_CHANNEL_KEY:}
+  api-secret: ${PORTONE_API_SECRET:}
+
+
+
+
+
+
