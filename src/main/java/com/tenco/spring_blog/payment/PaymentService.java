@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -16,9 +17,16 @@ import java.util.UUID;
 @Service
 @Transactional(readOnly = true)
 public class PaymentService {
-
     private final PaymentJpaRepository paymentJpaRepository;
     private final UserJpaRepository userJpaRepository;
+
+    private List<PaymentResponse.ListDto> findAllByUserId(Long userId) {
+        List<Payment> paymentList = paymentJpaRepository
+                .findAllByUserIdAndStatus(userId, PaymentStatus.PAID);
+        return paymentList.stream()
+                .map(PaymentResponse.ListDto::new)
+                .toList();
+    }
 
     /**
      *  1단계 : 결제 건 생성
