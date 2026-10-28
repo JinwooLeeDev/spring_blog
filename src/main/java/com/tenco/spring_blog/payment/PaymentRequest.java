@@ -24,6 +24,7 @@ public class PaymentRequest {
     @Data
     public static class CompleteDto {
         private String paymentId;
+
         public void validate() {
             if (paymentId == null || paymentId.isBlank()) {
                 throw new Exception400("결제 건 식별자가 필요합니다");
