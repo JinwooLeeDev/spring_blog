@@ -17,24 +17,42 @@
                                 <p class="text-muted mb-2"><i class="fa-solid fa-receipt"></i> 결제번호 :
                                     {{paymentId}}</p>
                                 {{#pgTxId}}
-                                <p class="text-muted mb-2"><i class="fa-solid fa-hashtag"></i> PG 거래번호 : {{pgTxId}}</p>
+                                    <p class="text-muted mb-2"><i class="fa-solid fa-hashtag"></i> PG 거래번호 : {{pgTxId}}
+                                    </p>
                                 {{/pgTxId}}
                                 <p class="text-muted mb-2"><i class="fa-solid fa-calendar"></i> 결제일 : {{paidAt}}
                                 </p>
-                                <p class="text-muted mb-0">
-                                    <i class="fa-solid fa-circle-info"></i> 상태 : {{}}
-                                    <span class="badge bg-success">{{statusDisplay}}</span>
-                                </p>
+                                {{^cancelled}}
+                                    <p class="text-muted mb-0">
+                                        <i class="fa-solid fa-circle-info"></i> 상태 :
+                                        <span class="badge bg-success">{{statusDisplay}}</span>
+                                    </p>
+                                {{/cancelled}}
+                                {{#cancelled}}
+                                    <p class="text-muted mb-0">
+                                        <i class="fa-solid fa-circle-info"></i> 상태 :
+                                        <span class="badge bg-success">{{statusDisplay}}</span>
+                                    </p>
+                                {{/cancelled}}
                             </div>
-                            <div class="text-end">
-                                <!-- 5000 →  -->
-                                <span class="badge bg-primary fs-6">+{{amount}}</span>
+                            <div class="d-flex flex-column align-items-end gap-2">
+                                {{^cancelled}}
+                                    <span class="badge bg-primary fs-6">+{{amount}}</span>
+                                {{/cancelled}}
+
+                                {{#cancelled}}
+                                    <span class="badge bg-secondary text-decoration-line-through fs-6">+{{amount}}</span>
+                                {{/cancelled}}
+
+                                {{#refundable}}
+                                    <a href="/refund/request/{{id}}"
+                                       class="btn btn-outline-danger btn-sm">환불 요청</a>
+                                {{/refundable}}
                             </div>
                         </div>
                     </div>
                 </div>
             {{/paymentList}}
-
             {{^paymentList}}
                 <div class="text-center py-5">
                     <i class="fa-solid fa-credit-card fa-3x"></i>
@@ -43,8 +61,10 @@
                     <a href="/user/point/charge" class="btn btn-primary">포인트 충전하기</a>
                 </div>
             {{/paymentList}}
-
             <div class="mt-4">
+                <a href="/refund/list" class="btn btn-info">
+                    <i class="fa-solid fa-rotate-left"></i> 환불 요청 내역
+                </a>
                 <a href="/user/detail" class="btn btn-secondary">마이페이지로 돌아가기</a>
             </div>
         </div>

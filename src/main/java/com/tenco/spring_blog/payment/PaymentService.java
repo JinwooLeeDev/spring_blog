@@ -2,6 +2,7 @@ package com.tenco.spring_blog.payment;
 
 import com.tenco.spring_blog._core.error.Exception400;
 import com.tenco.spring_blog._core.error.Exception403;
+import com.tenco.spring_blog.refund.RefundRepository;
 import com.tenco.spring_blog.user.User;
 import com.tenco.spring_blog.user.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
@@ -19,16 +20,25 @@ import java.util.UUID;
 public class PaymentService {
     private final PaymentJpaRepository paymentJpaRepository;
     private final UserJpaRepository userJpaRepository;
+    private final RefundRepository refundRepository;
+
+
 
 
     public List<PaymentResponse.ListDto> findAllByUserId(Long userId) {
         List<Payment> paymentList = paymentJpaRepository
-                .findAllByUserIdAndStatus(userId, PaymentStatus.PAID);
+                .findAllByUserIdAndStatusList(userId, List.of(PaymentStatus.PAID, PaymentStatus.CANCELLED));
+        // 결제 내역 조회 (로그인 사용자)
+        List<Long> requestedPaymentIds = refundRepository.findPaymentPkListByUserId(userId);
+        // 사용자가 환불 요청한 결제 PK 목록(결제 내역 화면에 환불 버튼 표시로 사용 됨)
         return paymentList.stream()
-                .map(PaymentResponse.ListDto::new)
+                .map(payment -> new PaymentResponse.ListDto(
+                        payment, payment.isPaid() && !requestedPaymentIds.contains(payment.getId())))
                 .toList();
+        // 조회된 결제 내역(PAID, CANCELLED)을 Dto로 변환
+        // PAID 상태이고 환불요청 이력이 없는 결제는 refundable을 true로 설정됨
+        // 머스태치에서 refundable이 true인 결제에만 환불 버튼 표시
     }
-
     /**
      *  1단계 : 결제 건 생성
      *  paymentId 를 발급하고 "누가 얼마를 " 결제할 예정인지 READY 상태로 저장한다.
