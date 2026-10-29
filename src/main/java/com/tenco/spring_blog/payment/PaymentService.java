@@ -20,7 +20,8 @@ public class PaymentService {
     private final PaymentJpaRepository paymentJpaRepository;
     private final UserJpaRepository userJpaRepository;
 
-    private List<PaymentResponse.ListDto> findAllByUserId(Long userId) {
+
+    public List<PaymentResponse.ListDto> findAllByUserId(Long userId) {
         List<Payment> paymentList = paymentJpaRepository
                 .findAllByUserIdAndStatus(userId, PaymentStatus.PAID);
         return paymentList.stream()
