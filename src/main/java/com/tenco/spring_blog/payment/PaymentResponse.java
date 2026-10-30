@@ -2,12 +2,26 @@ package com.tenco.spring_blog.payment;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.tenco.spring_blog._core.util.MyDateUtil;
-import jdk.jfr.DataAmount;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
 public class PaymentResponse {
+
+    // 포트원 결제 취소
+    @Data
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class PortOneCancel {
+        Cancellation cancellation;
+
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class Cancellation {
+            private String id;
+            private String status;
+            private int totalAmount;
+        }
+    }
 
     // 결제 내역 (포인트 결제) DTO
     public static class ListDto {

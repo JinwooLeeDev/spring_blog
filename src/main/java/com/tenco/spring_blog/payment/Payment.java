@@ -71,6 +71,10 @@ public class Payment {
         this.pgTxId = pgTxId; // null 값 허용
     }
 
+    public void markCancelled() {
+        this.status = PaymentStatus.CANCELLED;
+    }
+
 }
 
 

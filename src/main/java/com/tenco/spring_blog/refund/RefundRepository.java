@@ -1,6 +1,5 @@
 package com.tenco.spring_blog.refund;
 
-import com.tenco.spring_blog.payment.Payment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -27,9 +26,22 @@ public interface RefundRepository extends JpaRepository<Refund, Long> {
             """)
     List<Refund> findAllByUserIdJoinPayment(@Param("userId") Long userId);
 
-
-
     // 관리자 : 전체 환불 요청 목록
+    @Query("""
+            SELECT r FROM Refund r
+            JOIN FETCH r.user
+            JOIN FETCH r.payment
+            ORDER BY r.id DESC
+            """)
+    List<Refund> findAllJoinUserAndPayment();
 
-    // 관리자 : 승인할 환불 요청 1건 정보 조회
+
+    // 관리자 : 승인할 환불 요청 1건 정보 조회, 유저 정보 포함
+    @Query("""
+            SELECT r FROM Refund r
+            JOIN FETCH r.user
+            JOIN FETCH r.payment
+            WHERE r.id = :id
+            """)
+    Optional<Refund> findByIdJoinUserAndPayment(@Param("id") Long id);
 }
